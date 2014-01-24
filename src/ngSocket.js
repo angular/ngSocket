@@ -2,7 +2,7 @@ angular.module('ngSocket', []).
   factory('ngWebSocket', ['$rootScope', '$window', '$q',
     function ($rootScope, $window, $q) {
       var NGWebSocket = function (url) {
-        var match = /ws?:\/\//.exec(url);
+        var match = /ws{1,2}?:\/\//.exec(url);
 
         if (!match) {
           throw new Error('Invalid url provided');
