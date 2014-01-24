@@ -1,0 +1,33 @@
+{
+  "name": "ngSocket",
+  "version": "0.0.1",
+  "description": "An AngularJS WebSocket library",
+  "main": "src/ngSocket.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/karma start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jeffbcross/ngSocket"
+  },
+  "author": "jeffbcross (Google)",
+  "license": "Apache 2",
+  "bugs": {
+    "url": "https://github.com/jeffbcross/ngSocket/issues"
+  },
+  "homepage": "https://github.com/jeffbcross/ngSocket",
+  "devDependencies": {
+    "karma-script-launcher": "~0.1.0",
+    "karma-chrome-launcher": "~0.1.2",
+    "karma-firefox-launcher": "~0.1.3",
+    "karma-jasmine": "~0.1.5",
+    "karma-coffee-preprocessor": "~0.1.2",
+    "requirejs": "~2.1.10",
+    "karma-requirejs": "~0.2.1",
+    "karma-phantomjs-launcher": "~0.1.1",
+    "karma": "~0.10.9"
+  }
+}
