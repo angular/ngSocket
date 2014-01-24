@@ -35,6 +35,12 @@ describe('ngSocket', function () {
       expect(spy).toHaveBeenCalledWith(url);
     });
 
+    it('should attempt connecting to a secure socket if provided a valid URL', function () {
+      var spy = spyOn($window, 'WebSocket');
+      var url = 'wss://foo/bar';
+      var ws = ngWebSocket(url);
+      expect(spy).toHaveBeenCalledWith(url);
+    });
 
     it('should return a promise when connecting', function () {
       var ws = ngWebSocket('ws://foo/bar');
