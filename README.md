@@ -11,7 +11,7 @@ bower install ngSocket
 ```javascript
 .controller('SomeCtrl', function (ngWebSocket) {
   //Open a WebSocket connection
-  var ws = nwWebSocket('ws://foo/bar');
+  var ws = ngWebSocket('ws://foo/bar');
 
   //Can call before socket has opened
   ws.send({foo: 'bar'});
@@ -20,8 +20,9 @@ bower install ngSocket
 
 ## API
 
-*Factory:ngWebSocket*
-returns instance of private NGWebSocket constructor
+### Factory: `ngWebSocket`
+
+returns instance of NGWebSocket
 
 ### Properties:
 
@@ -50,3 +51,4 @@ returns instance of private NGWebSocket constructor
  * Add `on` method to alias `socket.onmessage`
  * Add `onerror` to allow applications to respond to socket errors in their own ways
  * Expand on the built-in `readyState` constants to include implementation-specific states (like "Re-connecting")
+ * Return a promise when calling `send()`
