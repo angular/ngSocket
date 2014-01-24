@@ -105,6 +105,64 @@ describe('ngSocket', function () {
     });
 
 
+    describe('.onMessage()', function () {
+      var fn, ws;
+
+      beforeEach(function () {
+        fn = function () {};
+        ws = ngWebSocket('ws://foo');
+      });
+
+
+      it('should add the callback to a queue', function () {
+        ws.onMessage(fn);
+        expect(ws.onMessageCallbacks[0].fn).toBe(fn);
+      });
+
+
+      it('should complain if not given a function', function () {
+        expect(function () {ws.onMessage('lol');}).toThrow(new Error('Callback must be a function'));
+      });
+
+
+      it('should accept an optional string as the second argument', function () {
+        ws.onMessage(fn, 'foo');
+      });
+
+
+      it('should only call callback if message matches string exactly', function () {
+        var mock = {spyable: function () {}}
+        var spy = spyOn(mock, 'spyable');
+        ws.onMessage(mock.spyable, 'foo');
+        ws._onmessage({data: 'bar'});
+        expect(spy).not.toHaveBeenCalled();
+        ws._onmessage({data: 'foo'});
+        expect(spy).toHaveBeenCalled();
+      });
+
+
+      it('should accept an optional RegEx pattern as the second argument', function () {
+        ws.onMessage(fn, /baz/);
+      });
+
+
+      it('should only call callback if message matches pattern', function () {
+        var mock = {spyable: function () {}}
+        var spy = spyOn(mock, 'spyable');
+        ws.onMessage(mock.spyable, /baz[0-9]{2}/);
+        ws._onmessage({data: 'bar'});
+        expect(spy).not.toHaveBeenCalled();
+        ws._onmessage({data: 'baz21'});
+        expect(spy).toHaveBeenCalled();
+      });
+
+
+      it('should complain if the second argument is anything but RegEx or string', function () {
+        expect(function () {ws.onMessage(fn, 5)}).toThrow(new Error('Pattern must be a string or regular expression'))
+      });
+    });
+
+
     describe('.onOpened()', function () {
       it('should resolve and apply', function () {
         var resolved = false;

@@ -28,6 +28,8 @@
     "requirejs": "~2.1.10",
     "karma-requirejs": "~0.2.1",
     "karma-phantomjs-launcher": "~0.1.1",
-    "karma": "~0.10.9"
+    "karma": "~0.10.9",
+    "ws": "~0.4.31",
+    "http-server": "~0.6.1"
   }
 }
