@@ -134,9 +134,9 @@ describe('ngSocket', function () {
         var mock = {spyable: function () {}}
         var spy = spyOn(mock, 'spyable');
         ws.onMessage(mock.spyable, 'foo');
-        ws._onmessage({data: 'bar'});
+        ws._onMessageHandler({data: 'bar'});
         expect(spy).not.toHaveBeenCalled();
-        ws._onmessage({data: 'foo'});
+        ws._onMessageHandler({data: 'foo'});
         expect(spy).toHaveBeenCalled();
       });
 
@@ -150,9 +150,9 @@ describe('ngSocket', function () {
         var mock = {spyable: function () {}}
         var spy = spyOn(mock, 'spyable');
         ws.onMessage(mock.spyable, /baz[0-9]{2}/);
-        ws._onmessage({data: 'bar'});
+        ws._onMessageHandler({data: 'bar'});
         expect(spy).not.toHaveBeenCalled();
-        ws._onmessage({data: 'baz21'});
+        ws._onMessageHandler({data: 'baz21'});
         expect(spy).toHaveBeenCalled();
       });
 
@@ -163,7 +163,7 @@ describe('ngSocket', function () {
     });
 
 
-    describe('.onOpened()', function () {
+    describe('._onOpenHandler()', function () {
       it('should resolve and apply', function () {
         var resolved = false;
         var ws = ngWebSocket('ws://foo');
@@ -172,7 +172,7 @@ describe('ngSocket', function () {
         });
 
         expect(resolved).toBe(false);
-        ws.onOpened.call(ws);
+        ws._onOpenHandler.call(ws);
         expect(resolved).toBe(true);
       });
 
@@ -180,7 +180,7 @@ describe('ngSocket', function () {
       it('should call fireQueue to flush any queued send() calls', function () {
         var ws = ngWebSocket('ws://foo');
         var spy = spyOn(ws, 'fireQueue');
-        ws.onOpened.call(ws);
+        ws._onOpenHandler.call(ws);
         expect(spy).toHaveBeenCalled();
       });
     });

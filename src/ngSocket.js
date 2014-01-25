@@ -14,13 +14,8 @@ angular.module('ngSocket', []).
         this.sendQueue = [];
         this.onMessageCallbacks = [];
 
-        this.socket.onopen = function () {
-          this.onOpened.apply(this, arguments);
-        }.bind(this);
-
-        this.socket.onmessage = function () {
-          this._onmessage.apply(this, arguments);
-        }.bind(this);
+        this.socket.onopen = this._onOpenHandler.bind(this);
+        this.socket.onmessage = this._onMessageHandler.bind(this);
       };
 
       NGWebSocket.prototype.fireQueue = function () {
@@ -50,7 +45,7 @@ angular.module('ngSocket', []).
         this.onMessageCallbacks.push({fn: callback, pattern: pattern});
       };
 
-      NGWebSocket.prototype._onmessage = function (message) {
+      NGWebSocket.prototype._onMessageHandler = function (message) {
         var pattern;
         for (var i = 0; i < this.onMessageCallbacks.length; i++) {
           pattern = this.onMessageCallbacks[i].pattern;
@@ -69,7 +64,7 @@ angular.module('ngSocket', []).
         }
       };
 
-      NGWebSocket.prototype.onOpened = function () {
+      NGWebSocket.prototype._onOpenHandler = function () {
         $rootScope.$apply(function () {
           this.deferred.resolve();
           this.fireQueue.call(this);
