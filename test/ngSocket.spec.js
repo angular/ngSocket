@@ -36,25 +36,8 @@ describe('ngSocket', function () {
     });
 
 
-    it('should return a promise when connecting', function () {
-      var ws = ngWebSocket('ws://foo/bar');
-      expect(typeof ws.promise).toBe('object');
-      expect(typeof ws.promise.then).toBe('function');
-    });
-
-
     it('should return an object containing a reference to the WebSocket instance', function () {
       expect(ngWebSocket('ws://foo/bar').socket instanceof $window.WebSocket).toBe(true);
-    });
-
-
-    it('should resolve the connection promise when event is received', function () {
-      var spy = spyOn(angular, 'noop');
-      var ws = ngWebSocket('ws://foo/bar');
-      ws.promise.then(angular.noop);
-      ws.socket.onopen.call();
-
-      expect(spy).toHaveBeenCalled();
     });
 
 
@@ -70,7 +53,17 @@ describe('ngSocket', function () {
       ws1.send('baz');
       expect(ws1.sendQueue.length).toBe(1);
       expect(ws2.sendQueue.length).toBe(0);
-    })
+    });
+
+
+    describe('.onOpen()', function () {
+      it('should add the passed in function to the onOpenCallbacks array', function () {
+        var cb = function () {};
+        var ws = ngWebSocket('ws://foo');
+        ws.onOpen(cb);
+        expect(ws.onOpenCallbacks[0]).toBe(cb);
+      });
+    });
 
 
     describe('.send()', function () {
@@ -164,24 +157,44 @@ describe('ngSocket', function () {
 
 
     describe('._onOpenHandler()', function () {
-      it('should resolve and apply', function () {
-        var resolved = false;
-        var ws = ngWebSocket('ws://foo');
-        ws.promise.then(function () {
-          resolved = true;
-        });
-
-        expect(resolved).toBe(false);
-        ws._onOpenHandler.call(ws);
-        expect(resolved).toBe(true);
-      });
-
-
       it('should call fireQueue to flush any queued send() calls', function () {
         var ws = ngWebSocket('ws://foo');
         var spy = spyOn(ws, 'fireQueue');
         ws._onOpenHandler.call(ws);
         expect(spy).toHaveBeenCalled();
+      });
+
+
+      it('should call the passed-in function when a socket first connects', function () {
+        var ws = ngWebSocket('ws://foo');
+        var spy = spyOn({cb: function () {}}, 'cb');
+
+        ws.onOpenCallbacks.push(spy);
+        ws._onOpenHandler.call(ws);
+        expect(spy).toHaveBeenCalled();
+      });
+
+
+      it('should call the passed-in function when a socket re-connects', function () {
+        var ws = ngWebSocket('ws://foo');
+        var spy = spyOn({cb: function () {}}, 'cb');
+        ws.onOpenCallbacks.push(spy);
+        ws._onOpenHandler.call(ws);
+        ws._onOpenHandler.call(ws);
+        expect(spy.callCount).toBe(2);
+      });
+
+
+      it('should call multiple callbacks when connecting', function () {
+        var ws = ngWebSocket('ws://foo');
+        var spy1 = spyOn({cb: function () {}}, 'cb');
+        var spy2 = spyOn({cb: function () {}}, 'cb');
+
+        ws.onOpenCallbacks.push(spy1);
+        ws.onOpenCallbacks.push(spy2);
+        ws._onOpenHandler.call(ws);
+        expect(spy1).toHaveBeenCalled();
+        expect(spy2).toHaveBeenCalled();
       });
     });
 

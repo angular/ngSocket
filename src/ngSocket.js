@@ -1,6 +1,6 @@
 angular.module('ngSocket', []).
-  factory('ngWebSocket', ['$rootScope', '$window', '$q',
-    function ($rootScope, $window, $q) {
+  factory('ngWebSocket', ['$window',
+    function ($window) {
       var NGWebSocket = function (url) {
         var match = /ws?:\/\//.exec(url);
 
@@ -8,10 +8,9 @@ angular.module('ngSocket', []).
           throw new Error('Invalid url provided');
         }
 
-        this.deferred = $q.defer();
-        this.promise = this.deferred.promise;
         this.socket = new $window.WebSocket(url);
         this.sendQueue = [];
+        this.onOpenCallbacks = [];
         this.onMessageCallbacks = [];
 
         this.socket.onopen = this._onOpenHandler.bind(this);
@@ -27,6 +26,12 @@ angular.module('ngSocket', []).
           this.socket.send(typeof data === 'string'?
             data :
             JSON.stringify(data));
+        }
+      };
+
+      NGWebSocket.prototype.notifyOpenCallbacks = function () {
+        for (var i = 0; i < this.onOpenCallbacks.length; i++) {
+          this.onOpenCallbacks[i].call(this);
         }
       };
 
@@ -64,11 +69,14 @@ angular.module('ngSocket', []).
         }
       };
 
+      NGWebSocket.prototype.onOpen = function (cb) {
+        this.onOpenCallbacks.push(cb);
+      };
+
       NGWebSocket.prototype._onOpenHandler = function () {
-        $rootScope.$apply(function () {
-          this.deferred.resolve();
-          this.fireQueue.call(this);
-        }.bind(this));
+
+        this.notifyOpenCallbacks();
+        this.fireQueue();
       };
 
       NGWebSocket.prototype.send = function (data) {

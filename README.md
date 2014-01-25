@@ -2,7 +2,7 @@
 
 ## Status: In-Development
 
-A promise-based AngularJS service for connecting applications to servers with WebSocket support.
+An AngularJS 1.2 service for connecting applications to servers with WebSocket support.
 
 ## Usage
 
@@ -25,10 +25,7 @@ bower install ngSocket
 returns instance of NGWebSocket
 
 ### Properties:
-
- * `deferred`
- * `promise` promise to be resolved on `open` event of socket.
- * `socket` ([WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance)
+ * `socket` (private) ([WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance)
  * `sendQueue` array of `send` calls to be made on socket when socket is able to receive data
 
 
@@ -61,13 +58,14 @@ In the project root directory:
 Open localhost:8081/test-app.html and watch browser console and node console to see messages passing
 
 ### Distribute
-`$ ./dist.sh` For now just copies `src/ngSockets` to the root (bower ignores src/ and test, plus pretty much everything else)
+`$ ./dist.sh` For now just copies `src/ngSocket.js` to the root (bower is configured to ignore src/ and test, plus pretty much everything else)
 
 ## TODO
-
  * Add support for close method
  * Automatic re-connection when connection lost
  * Consider support for ArrayBuffer and Blob datatypes
  * Add `onerror` to allow applications to respond to socket errors in their own ways
  * Expand on the built-in `readyState` constants to include implementation-specific states (like "Re-connecting")
  * Return a promise when calling `send()`
+ * Be able to cancel a send without looking it up in an array.
+ * Rewrite in ES6

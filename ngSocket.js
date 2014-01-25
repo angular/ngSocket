@@ -1,6 +1,6 @@
 angular.module('ngSocket', []).
-  factory('ngWebSocket', ['$rootScope', '$window', '$q',
-    function ($rootScope, $window, $q) {
+  factory('ngWebSocket', ['$window',
+    function ($window) {
       var NGWebSocket = function (url) {
         var match = /ws?:\/\//.exec(url);
 
@@ -8,14 +8,13 @@ angular.module('ngSocket', []).
           throw new Error('Invalid url provided');
         }
 
-        this.deferred = $q.defer();
-        this.promise = this.deferred.promise;
         this.socket = new $window.WebSocket(url);
         this.sendQueue = [];
+        this.onOpenCallbacks = [];
+        this.onMessageCallbacks = [];
 
-        this.socket.onopen = function () {
-          this.onOpened.apply(this, arguments);
-        }.bind(this);
+        this.socket.onopen = this._onOpenHandler.bind(this);
+        this.socket.onmessage = this._onMessageHandler.bind(this);
       };
 
       NGWebSocket.prototype.fireQueue = function () {
@@ -30,11 +29,54 @@ angular.module('ngSocket', []).
         }
       };
 
-      NGWebSocket.prototype.onOpened = function () {
-        $rootScope.$apply(function () {
-          this.deferred.resolve();
-          this.fireQueue.call(this);
-        }.bind(this));
+      NGWebSocket.prototype.notifyOpenCallbacks = function () {
+        for (var i = 0; i < this.onOpenCallbacks.length; i++) {
+          this.onOpenCallbacks[i].call(this);
+        }
+      };
+
+      /*
+        Public API
+      */
+      NGWebSocket.prototype.onMessage = function (callback, pattern) {
+        if (typeof callback !== 'function') {
+          throw new Error('Callback must be a function');
+        }
+
+        if (typeof pattern !== 'undefined' && typeof pattern !== 'string' && !(pattern instanceof RegExp)) {
+          throw new Error('Pattern must be a string or regular expression');
+        }
+
+        this.onMessageCallbacks.push({fn: callback, pattern: pattern});
+      };
+
+      NGWebSocket.prototype._onMessageHandler = function (message) {
+        var pattern;
+        for (var i = 0; i < this.onMessageCallbacks.length; i++) {
+          pattern = this.onMessageCallbacks[i].pattern;
+          if (pattern) {
+            if (typeof pattern === 'string' && message.data === pattern) {
+              this.onMessageCallbacks[i].fn.call(this, message);
+            }
+            else if (pattern instanceof RegExp && pattern.exec(message.data)) {
+              this.onMessageCallbacks[i].fn.call(this, message);
+            }
+          }
+          else {
+            this.onMessageCallbacks[i].fn.call(this, message);
+          }
+
+        }
+      };
+
+      NGWebSocket.prototype.onOpen = function (cb) {
+        this.onOpenCallbacks.push(cb);
+      };
+
+      NGWebSocket.prototype._onOpenHandler = function () {
+
+        this.notifyOpenCallbacks();
+        this.fireQueue();
       };
 
       NGWebSocket.prototype.send = function (data) {
