@@ -30,7 +30,7 @@ returns instance of NGWebSocket
 
 name        | arguments                                              | description
 ------------|--------------------------------------------------------|------------
-ngWebSocket <br>_constructor_ | url:String                           | Creates and opens a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance
+ngWebSocket <br>_constructor_ | url:String                           | Creates and opens a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance. `var ws = ngWebSocket('ws://foo');`
 send        | data:String,Object                                     | Adds data to a queue, and attempts to send if socket is ready. Accepts string or object, and will stringify objects before sending to socket.
 onMessage   | callback:Function <br>pattern:String,RegExp:_optional_ | Register a callback to be fired on every message received from the websocket, or optionally just when the message's `data` property matches the string or pattern provided. Callback gets called with a [MessageEvent](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent?redirectlocale=en-US&redirectslug=WebSockets%2FWebSockets_reference%2FMessageEvent) object.
 onOpen      | callback:Function                                      | Function to be executed each time a socket connection is opened for this instance.
@@ -68,11 +68,12 @@ Open localhost:8081/test-app.html and watch browser console and node console to 
 `$ ./dist.sh` For now just copies `src/ngSocket.js` to the root (bower is configured to ignore src/ and test, plus pretty much everything else)
 
 ## TODO
- * Add support for close method
  * Automatic re-connection when connection lost
- * Consider support for ArrayBuffer and Blob datatypes
- * Add `onerror` to allow applications to respond to socket errors in their own ways
- * Expand on the built-in `readyState` constants to include implementation-specific states (like "Re-connecting")
  * Return a promise when calling `send()`
  * Be able to cancel a send without looking it up in an array.
+ * Add support for close method, including checking buffered amount before closing.
+ * Add `onerror` to allow applications to respond to socket errors in their own ways
+ * Consider support for ArrayBuffer and Blob datatypes
+ * Expand on the built-in `readyState` constants to include implementation-specific states (like "Re-connecting")
+ * Add `protocols` parameter to constructor
  * Rewrite in ES6
