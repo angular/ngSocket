@@ -2,7 +2,7 @@ angular.module('ngSocket', []).
   factory('ngWebSocket', ['$window',
     function ($window) {
       var NGWebSocket = function (url) {
-        var match = /ws?:\/\//.exec(url);
+        var match = /wss?:\/\//.exec(url);
 
         if (!match) {
           throw new Error('Invalid url provided');
@@ -15,6 +15,12 @@ angular.module('ngSocket', []).
 
         this.socket.onopen = this._onOpenHandler.bind(this);
         this.socket.onmessage = this._onMessageHandler.bind(this);
+      };
+
+      NGWebSocket.prototype.close = function (force) {
+        if (force || !this.socket.bufferedAmount) {
+          this.socket.close();
+        }
       };
 
       NGWebSocket.prototype.fireQueue = function () {

@@ -14,9 +14,11 @@ describe('ngSocket', function () {
     ngWebSocket = _ngWebSocket_;
 
     localMocks.sendMock = function () {};
+    localMocks.closeMock = function () {};
 
     $window.WebSocket = WSMock = function (url) {
       this.send = localMocks.sendMock;
+      this.close = localMocks.closeMock;
     };
   }));
 
@@ -58,6 +60,34 @@ describe('ngSocket', function () {
       ws1.send('baz');
       expect(ws1.sendQueue.length).toBe(1);
       expect(ws2.sendQueue.length).toBe(0);
+    });
+
+
+    describe('.close()', function () {
+      it('should call close on the underlying socket', function () {
+        var spy = spyOn(localMocks, 'closeMock');
+        var ws = ngWebSocket('ws://foo');
+        ws.close();
+        expect(spy).toHaveBeenCalled();
+      });
+
+
+      it('should not call close if the bufferedAmount is greater than 0', function () {
+        var spy = spyOn(localMocks, 'closeMock');
+        var ws = ngWebSocket('ws://foo');
+        ws.socket.bufferedAmount = 5;
+        ws.close();
+        expect(spy).not.toHaveBeenCalled();
+      });
+
+
+      it('should accept a force param to close the socket even if bufferedAmount is greater than 0', function () {
+        var spy = spyOn(localMocks, 'closeMock');
+        var ws = ngWebSocket('ws://foo');
+        ws.socket.bufferedAmount = 5;
+        ws.close(true);
+        expect(spy).toHaveBeenCalled();
+      })
     });
 
 

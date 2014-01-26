@@ -17,6 +17,12 @@ angular.module('ngSocket', []).
         this.socket.onmessage = this._onMessageHandler.bind(this);
       };
 
+      NGWebSocket.prototype.close = function (force) {
+        if (force || !this.socket.bufferedAmount) {
+          this.socket.close();
+        }
+      };
+
       NGWebSocket.prototype.fireQueue = function () {
         while (
             this.sendQueue.length &&
