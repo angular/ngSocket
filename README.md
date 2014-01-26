@@ -24,17 +24,24 @@ bower install ngSocket
 
 returns instance of NGWebSocket
 
-### Properties:
- * `socket` (private) ([WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance)
- * `sendQueue` array of `send` calls to be made on socket when socket is able to receive data
 
 
-### Public Methods:
+### Methods
 
- * `ngWebSocket(url)` (constructor) Creates and opens a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance
- * `send(data(string|object))` Adds data to a queue, and attempts to send if socket is ready. Accepts string or object, and will stringify objects before sending to socket.
- * `onMessage(callback(function), pattern(string|RegExp - optional))` Register a callback to be fired on every message received from the websocket, or optionally just when the message's `data` property matches the string or pattern provided. Callback gets called with a [MessageEvent](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent?redirectlocale=en-US&redirectslug=WebSockets%2FWebSockets_reference%2FMessageEvent) object.
+name        | arguments                                              | description
+------------|--------------------------------------------------------|------------
+ngWebSocket <br>_constructor_ | url:String                           | Creates and opens a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance
+send        | data:String,Object                                     | Adds data to a queue, and attempts to send if socket is ready. Accepts string or object, and will stringify objects before sending to socket.
+onMessage   | callback:Function <br>pattern:String,RegExp:_optional_ | Register a callback to be fired on every message received from the websocket, or optionally just when the message's `data` property matches the string or pattern provided. Callback gets called with a [MessageEvent](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent?redirectlocale=en-US&redirectslug=WebSockets%2FWebSockets_reference%2FMessageEvent) object.
+onOpen      | callback:Function                                      | Function to be executed each time a socket connection is opened for this instance.
 
+### Properties
+name               | type             | description
+-------------------|------------------|------------
+socket             | window.WebSocket | [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance.
+sendQueue          | Array<function>  | Queue of `send` calls to be made on socket when socket is able to receive data. List is populated by calls to the `send` method, but this array can be spliced if data needs to be manually removed before it's been sent to a socket. Data is removed from the array after it's been sent to the socket.
+onOpenCallbacks    | Array<function>  | List of callbacks to be executed when the socket is opened, initially or on re-connection after broken connection. Callbacks should be added to this list through the `onOpen` method.
+onMessageCallbacks | Array<function>  | List of callbacks to be executed when a message is received from the socket. Callbacks should be added via the `onMessage` method.
 
 ## Logical Questions
 
