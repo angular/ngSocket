@@ -36,6 +36,11 @@ describe('ngSocket', function () {
     });
 
 
+    it('should accept a wss url', function () {
+      var ws = ngWebSocket('wss://foo');
+    });
+
+
     it('should return an object containing a reference to the WebSocket instance', function () {
       expect(ngWebSocket('ws://foo/bar').socket instanceof $window.WebSocket).toBe(true);
     });
