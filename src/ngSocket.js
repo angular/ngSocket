@@ -8,18 +8,25 @@ angular.module('ngSocket', []).
           throw new Error('Invalid url provided');
         }
 
-        this.socket = new $window.WebSocket(url);
+        this.url = url;
+        this.$window = $window;
         this.sendQueue = [];
         this.onOpenCallbacks = [];
         this.onMessageCallbacks = [];
-
-        this.socket.onopen = this._onOpenHandler.bind(this);
-        this.socket.onmessage = this._onMessageHandler.bind(this);
+        this._connect();
       };
 
       NGWebSocket.prototype.close = function (force) {
         if (force || !this.socket.bufferedAmount) {
           this.socket.close();
+        }
+      };
+
+      NGWebSocket.prototype._connect = function (force) {
+        if (force || !this.socket || this.socket.readyState !== 1) {
+          this.socket = new this.$window.WebSocket(this.url);
+          this.socket.onopen = this._onOpenHandler.bind(this);
+          this.socket.onmessage = this._onMessageHandler.bind(this);
         }
       };
 
@@ -80,7 +87,6 @@ angular.module('ngSocket', []).
       };
 
       NGWebSocket.prototype._onOpenHandler = function () {
-
         this.notifyOpenCallbacks();
         this.fireQueue();
       };

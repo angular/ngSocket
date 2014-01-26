@@ -30,14 +30,6 @@ describe('ngSocket', function () {
 
 
   describe('ngWebSocket', function () {
-    it('should attempt connecting to a socket if provided a valid URL', function () {
-      var spy = spyOn($window, 'WebSocket');
-      var url = 'ws://foo/bar';
-      var ws = ngWebSocket(url);
-      expect(spy).toHaveBeenCalledWith(url);
-    });
-
-
     it('should accept a wss url', function () {
       var ws = ngWebSocket('wss://foo');
     });
@@ -60,6 +52,39 @@ describe('ngSocket', function () {
       ws1.send('baz');
       expect(ws1.sendQueue.length).toBe(1);
       expect(ws2.sendQueue.length).toBe(0);
+    });
+
+
+    describe('._connect()', function () {
+      it('should attempt connecting to a socket if provided a valid URL', function () {
+        var spy = spyOn($window, 'WebSocket');
+        var url = 'ws://foo/bar';
+        var ws = ngWebSocket(url);
+        ws.socket = null;
+        ws._connect();
+        expect(spy).toHaveBeenCalledWith('ws://foo/bar');
+        expect(spy.callCount).toBe(2);
+      });
+
+
+      it('should not connect if a socket has a readyState of 1', function () {
+        var spy = spyOn($window, 'WebSocket');
+        var url = 'ws://foo/bar';
+        var ws = ngWebSocket(url);
+        ws.socket.readyState = 1;
+        ws._connect();
+        expect(spy.callCount).toBe(1);
+      });
+
+
+      it('should force reconnect if force parameter is true', function () {
+        var spy = spyOn($window, 'WebSocket');
+        var url = 'ws://foo/bar';
+        var ws = ngWebSocket(url);
+        ws.socket.readyState = 1;
+        ws._connect(true);
+        expect(spy.callCount).toBe(2);
+      });
     });
 
 
