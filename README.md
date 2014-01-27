@@ -9,7 +9,7 @@ An AngularJS 1.2 service for connecting applications to servers with WebSocket s
 bower install ngSocket
 
 ```javascript
-.controller('SomeCtrl', function (ngWebSocket) {
+.controller('SomeController', function (ngWebSocket) {
   //Open a WebSocket connection
   var ws = ngWebSocket('ws://foo/bar');
 
