@@ -73,5 +73,4 @@ Open localhost:8081/test-app.html and watch browser console and node console to 
  * Be able to cancel a send without looking it up in an array.
  * Add `onerror` to allow applications to respond to socket errors in their own ways
  * Consider support for ArrayBuffer and Blob datatypes
- * Expand on the built-in `readyState` constants to include implementation-specific states (like "Re-connecting")
  * Add `protocols` parameter to constructor

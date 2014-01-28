@@ -325,5 +325,31 @@ describe('ngSocket', function () {
         expect(ws.readyState).toBe(5);
       });
     });
+
+
+    describe('._readyStateConstants', function () {
+      it('should contain the basic readyState constants for WebSocket', function () {
+        var ws = ngWebSocket('ws://foo');
+        var constants = ws._readyStateConstants;
+        expect(constants.CONNECTING).toBe(0);
+        expect(constants.OPEN).toBe(1);
+        expect(constants.CLOSING).toBe(2);
+        expect(constants.CLOSED).toBe(3);
+      });
+
+
+      it('should provide custom constants to represent lib state', function () {
+        var ws = ngWebSocket('ws://foo');
+        var constants = ws._readyStateConstants;
+        expect(constants.RECONNECT_ABORTED).toBe(4);
+      });
+
+
+      it('should ignore attempts at changing constants', function () {
+        var ws = ngWebSocket('ws://foo');
+        ws._readyStateConstants.CONNECTING = 'foo';
+        expect(ws._readyStateConstants.CONNECTING).toBe(0);
+      });
+    });
   });
 });

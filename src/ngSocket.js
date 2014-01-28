@@ -13,7 +13,17 @@ angular.module('ngSocket', []).
         this.sendQueue = [];
         this.onOpenCallbacks = [];
         this.onMessageCallbacks = [];
+        Object.freeze(this._readyStateConstants);
+
         this._connect();
+      };
+
+      NGWebSocket.prototype._readyStateConstants = {
+        CONNECTING: 0,
+        OPEN: 1,
+        CLOSING: 2,
+        CLOSED: 3,
+        RECONNECT_ABORTED: 4
       };
 
       NGWebSocket.prototype.close = function (force) {
