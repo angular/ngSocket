@@ -96,6 +96,14 @@ angular.module('ngSocket', []).
         this.fireQueue();
       };
 
+      NGWebSocket.prototype.__defineGetter__('readyState', function () {
+        return this._internalConnectionState || this.socket.readyState;
+      });
+
+      NGWebSocket.prototype.__defineSetter__('readyState', function (input) {
+        throw new Error('The readyState property is read-only');
+      });
+
       return function (url) {
         return new NGWebSocket(url);
       };

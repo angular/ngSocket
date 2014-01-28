@@ -270,7 +270,7 @@ describe('ngSocket', function () {
 
       it('should not affect the queue if the readyState is not 1', function () {
         var data = {message: 'Hello'};
-        ws.readyState = 0;
+        ws.socket.readyState = 0;
         ws.send(data);
         expect(ws.sendQueue.length).toBe(1);
         ws.fireQueue();
@@ -297,10 +297,32 @@ describe('ngSocket', function () {
       it('should stringify an object when sending to socket', function () {
         var data = {message: 'Send me'};
         ws.socket.readyState = 1;
-
         ws.sendQueue.unshift(data);
         ws.fireQueue();
         expect(sendSpy).toHaveBeenCalledWith('{"message":"Send me"}');
+      });
+    });
+
+
+    describe('.readyState', function () {
+      it('should provide the readyState of the underlying socket', function () {
+        var ws = ngWebSocket('ws://foo');
+        ws.socket.readyState = 1;
+        expect(ws.readyState).toBe(1);
+      });
+
+
+      it('should complain if I try to set the readyState', function () {
+        var ws = ngWebSocket('ws://foo');
+        expect(function () {ws.readyState = 5}).toThrow(new Error('The readyState property is read-only'));
+      });
+
+
+      it('should return a proprietary readyState if lib is in a special state', function () {
+        var ws = ngWebSocket('ws://foo');
+        ws.socket.readyState = 1;
+        ws._internalConnectionState = 5;
+        expect(ws.readyState).toBe(5);
       });
     });
   });

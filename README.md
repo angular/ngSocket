@@ -41,6 +41,7 @@ socket             | window.WebSocket | [WebSocket](https://developer.mozilla.or
 sendQueue          | Array<function>  | Queue of `send` calls to be made on socket when socket is able to receive data. List is populated by calls to the `send` method, but this array can be spliced if data needs to be manually removed before it's been sent to a socket. Data is removed from the array after it's been sent to the socket.
 onOpenCallbacks    | Array<function>  | List of callbacks to be executed when the socket is opened, initially or on re-connection after broken connection. Callbacks should be added to this list through the `onOpen` method.
 onMessageCallbacks | Array<function>  | List of callbacks to be executed when a message is received from the socket. Callbacks should be added via the `onMessage` method.
+readyState         | Number:readonly  | Returns either the readyState value from the underlying WebSocket instance, or a proprietary value representing the internal state of the lib, e.g. if the lib is in a state of re-connecting.
 
 ## Logical Questions
 
@@ -74,4 +75,3 @@ Open localhost:8081/test-app.html and watch browser console and node console to 
  * Consider support for ArrayBuffer and Blob datatypes
  * Expand on the built-in `readyState` constants to include implementation-specific states (like "Re-connecting")
  * Add `protocols` parameter to constructor
- * Rewrite in ES6
