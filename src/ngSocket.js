@@ -1,15 +1,18 @@
 angular.module('ngSocket', []).
-  factory('ngWebSocket', ['$window',
-    function ($window) {
+  factory('ngWebSocketBackend', ['$window', function ($window) {
+    return function (url) {
+      var match = /wss?:\/\//.exec(url);
+
+      if (!match) {
+        throw new Error('Invalid url provided');
+      }
+
+      return new $window.WebSocket(url);
+    }
+  }]).
+  factory('ngWebSocket', [function () {
       var NGWebSocket = function (url) {
-        var match = /wss?:\/\//.exec(url);
-
-        if (!match) {
-          throw new Error('Invalid url provided');
-        }
-
         this.url = url;
-        this.$window = $window;
         this.sendQueue = [];
         this.onOpenCallbacks = [];
         this.onMessageCallbacks = [];
@@ -34,7 +37,7 @@ angular.module('ngSocket', []).
 
       NGWebSocket.prototype._connect = function (force) {
         if (force || !this.socket || this.socket.readyState !== 1) {
-          this.socket = new this.$window.WebSocket(this.url);
+          this.socket = ngWebSocketBackend(this.url)
           this.socket.onopen = this._onOpenHandler.bind(this);
           this.socket.onmessage = this._onMessageHandler.bind(this);
           this.socket.onclose = this._onCloseHandler.bind(this);
@@ -89,7 +92,6 @@ angular.module('ngSocket', []).
           else {
             this.onMessageCallbacks[i].fn.call(this, message);
           }
-
         }
       };
 

@@ -4,7 +4,7 @@ describe('ngSocket', function () {
 
   beforeEach(module('ngSocket'));
 
-  beforeEach(inject(function (_$compile_, _$rootScope_, _$controller_, _$httpBackend_, _$filter_, _$window_, _ngWebSocket_) {
+  beforeEach(inject(function (_$compile_, _$rootScope_, _$controller_, _$httpBackend_, _$filter_, _$window_, _ngWebSocket_, _ngWebSocketBackend_) {
     $compile = _$compile_;
     $rootScope = _$rootScope_;
     $controller = _$controller_;
@@ -12,6 +12,7 @@ describe('ngSocket', function () {
     $filter = _$filter_;
     $window = _$window_;
     ngWebSocket = _ngWebSocket_;
+    ngWebSocketBackend = _ngWebSocketBackend_;
 
     localMocks.sendMock = function () {};
     localMocks.closeMock = function () {};
@@ -29,6 +30,14 @@ describe('ngSocket', function () {
   });
 
 
+  describe('ngWebSocketBackend', function () {
+    it('should complain if not given a valid url', function () {
+      expect(function () {ngWebSocketBackend('%foobar/baz');}).
+        toThrow(new Error('Invalid url provided'));
+    });
+  });
+
+
   describe('ngWebSocket', function () {
     it('should accept a wss url', function () {
       var ws = ngWebSocket('wss://foo');
@@ -37,12 +46,6 @@ describe('ngSocket', function () {
 
     it('should return an object containing a reference to the WebSocket instance', function () {
       expect(ngWebSocket('ws://foo/bar').socket instanceof $window.WebSocket).toBe(true);
-    });
-
-
-    it('should complain if not given a valid url', function () {
-      expect(function () {ngWebSocket('%foobar/baz');}).
-        toThrow(new Error('Invalid url provided'));
     });
 
 
