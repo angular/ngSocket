@@ -85,6 +85,14 @@ describe('ngSocket', function () {
         ws._connect(true);
         expect(spy.callCount).toBe(2);
       });
+
+
+      it('should attach handlers to socket event attributes', function () {
+        var ws = ngWebSocket('ws://foo');
+        expect(typeof ws.socket.onopen).toBe('function');
+        expect(typeof ws.socket.onmessage).toBe('function');
+        expect(typeof ws.socket.onclose).toBe('function');
+      });
     });
 
 
@@ -112,7 +120,17 @@ describe('ngSocket', function () {
         ws.socket.bufferedAmount = 5;
         ws.close(true);
         expect(spy).toHaveBeenCalled();
-      })
+      });
+    });
+
+
+    describe('._onCloseHandler', function () {
+      it('should call .reconnect if the CloseEvent indicates a non-intentional close', function () {
+        var ws = ngWebSocket('ws://foo');
+        var spy = spyOn(ws, 'reconnect');
+        ws._onCloseHandler({statusCode: 5000});
+        expect(spy).toHaveBeenCalled();
+      });
     });
 
 

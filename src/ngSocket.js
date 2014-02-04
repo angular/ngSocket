@@ -37,6 +37,7 @@ angular.module('ngSocket', []).
           this.socket = new this.$window.WebSocket(this.url);
           this.socket.onopen = this._onOpenHandler.bind(this);
           this.socket.onmessage = this._onMessageHandler.bind(this);
+          this.socket.onclose = this._onCloseHandler.bind(this);
         }
       };
 
@@ -99,6 +100,12 @@ angular.module('ngSocket', []).
       NGWebSocket.prototype._onOpenHandler = function () {
         this.notifyOpenCallbacks();
         this.fireQueue();
+      };
+
+      NGWebSocket.prototype._onCloseHandler = function (event) {
+        if (this._reconnectableStatusCodes.indexOf(event.statusCode) > -1) {
+          this.reconnect();
+        }
       };
 
       NGWebSocket.prototype.send = function (data) {
