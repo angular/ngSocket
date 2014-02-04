@@ -20,7 +20,7 @@ bower install ngSocket
 
 ## API
 
-### Factory: `ngWebSocket`
+### Factory: `ngWebSocket` (in module `ngSocket`)
 
 returns instance of NGWebSocket
 
@@ -42,6 +42,21 @@ sendQueue          | Array<function>  | Queue of `send` calls to be made on sock
 onOpenCallbacks    | Array<function>  | List of callbacks to be executed when the socket is opened, initially or on re-connection after broken connection. Callbacks should be added to this list through the `onOpen` method.
 onMessageCallbacks | Array<function>  | List of callbacks to be executed when a message is received from the socket. Callbacks should be added via the `onMessage` method.
 readyState         | Number:readonly  | Returns either the readyState value from the underlying WebSocket instance, or a proprietary value representing the internal state of the lib, e.g. if the lib is in a state of re-connecting.
+
+### Service: `ngWebSocketBackend` (in module `ngSocketMock`)
+
+Similar to [`httpBackend`](http://docs.angularjs.org/api/ngMock.$httpBackend) mock in AngularJS's `ngMock` module
+
+### Methods
+
+name                           | arguments  | description
+-------------------------------|------------|-----------------------------------
+flush                          |            | Executes all pending requests
+expectConnect                  | url:String | Specify the url of an expected WebSocket connection
+expectClose                    |            | Expect "close" to be called on the WebSocket
+expectSend                     | msg:String | Expectation of send to be called, with required message
+verifyNoOutstandingExpectation |            | Makes sure all expectations have been satisfied, should be called in afterEach
+verifyNoOutstandingRequest     |            | Makes sure no requests are pending, should be called in afterEach
 
 ## Logical Questions
 

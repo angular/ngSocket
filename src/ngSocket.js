@@ -1,6 +1,72 @@
+angular.module('ngSocketMock', []).
+  service('ngWebSocketBackend', [function () {
+    var connectQueue = [], pendingConnects = [],
+        closeQueue = [], pendingCloses = [],
+        sendQueue = [], pendingSends = [];
+
+    function MockWebSocket (url) {};
+    MockWebSocket.prototype.send = function (msg) {
+      pendingSends.push(msg);
+    };
+
+    MockWebSocket.prototype.close = function () {
+      pendingCloses.push(true);
+    };
+
+    this.createWebSocketBackend = function (url) {
+      pendingConnects.push(url);
+
+      return new MockWebSocket(url);
+    };
+
+    this.flush = function () {
+      while (url = pendingConnects.shift()) {
+        var i = connectQueue.indexOf(url);
+        if (i > -1) {
+          connectQueue.splice(i, 1);
+        }
+      }
+
+      while (pendingCloses.shift()) {
+        closeQueue.shift();
+      }
+
+      while (msg = pendingSends.shift()) {
+        var j = sendQueue.indexOf(msg);
+        if (j > -1) {
+          sendQueue.splice(j, 1);
+        }
+      }
+    };
+
+    this.expectConnect = function (url) {
+      connectQueue.push(url);
+    };
+
+    this.expectClose = function () {
+      closeQueue.push(true);
+    };
+
+    this.expectSend = function (msg) {
+      sendQueue.push(msg);
+    };
+
+    this.verifyNoOutstandingExpectation = function () {
+      if (connectQueue.length || closeQueue.length || sendQueue.length) {
+        throw new Error('Requests waiting to be flushed');
+      }
+    };
+
+    this.verifyNoOutstandingRequest = function () {
+      if (pendingConnects.length || pendingCloses.length || pendingSends.length) {
+        throw new Error('Requests waiting to be processed');
+      }
+    };
+  }]);
+
 angular.module('ngSocket', []).
-  factory('ngWebSocketBackend', ['$window', function ($window) {
-    return function (url) {
+  service('ngWebSocketBackend', ['$window', function ($window) {
+    this.createWebSocketBackend = function (url) {
       var match = /wss?:\/\//.exec(url);
 
       if (!match) {
@@ -8,7 +74,7 @@ angular.module('ngSocket', []).
       }
 
       return new $window.WebSocket(url);
-    }
+    };
   }]).
   factory('ngWebSocket', [function () {
       var NGWebSocket = function (url) {
@@ -41,7 +107,7 @@ angular.module('ngSocket', []).
 
       NGWebSocket.prototype._connect = function (force) {
         if (force || !this.socket || this.socket.readyState !== 1) {
-          this.socket = ngWebSocketBackend(this.url)
+          this.socket = ngWebSocketBackend.createWebSocketBackend(this.url)
           this.socket.onopen = this._onOpenHandler.bind(this);
           this.socket.onmessage = this._onMessageHandler.bind(this);
           this.socket.onclose = this._onCloseHandler.bind(this);
