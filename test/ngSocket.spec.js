@@ -372,5 +372,16 @@ describe('ngSocket', function () {
         expect(ws._readyStateConstants.CONNECTING).toBe(0);
       });
     });
+
+
+    describe('._reconnectableStatusCodes', function () {
+      it('should contain status codes that warrant re-establishing a connection', function () {
+        var ws = ngWebSocket('ws://foo');
+        expect(ws._reconnectableStatusCodes.length).toBe(1);
+        expect(ws._reconnectableStatusCodes).toEqual([5000])
+      });
+
+
+    })
   });
 });

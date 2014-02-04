@@ -29,6 +29,10 @@ angular.module('ngSocket', []).
         RECONNECT_ABORTED: 4
       };
 
+      NGWebSocket.prototype._reconnectableStatusCodes = [
+        5000
+      ];
+
       NGWebSocket.prototype.close = function (force) {
         if (force || !this.socket.bufferedAmount) {
           this.socket.close();
@@ -113,6 +117,10 @@ angular.module('ngSocket', []).
       NGWebSocket.prototype.send = function (data) {
         this.sendQueue.push(data);
         this.fireQueue();
+      };
+
+      NGWebSocket.prototype.reconnect = function () {
+
       };
 
       NGWebSocket.prototype.__defineGetter__('readyState', function () {
