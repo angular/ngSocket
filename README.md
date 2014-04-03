@@ -80,7 +80,7 @@ In the project root directory:
 Open localhost:8081/test-app.html and watch browser console and node console to see messages passing
 
 ### Distribute
-`$ ./dist.sh` For now just copies `src/ngSocket.js` to the root (bower is configured to ignore src/ and test, plus pretty much everything else)
+`$ ./dist.sh` For now just copies `src/ngSocket.js` to `dist/` (bower is configured to ignore src/ and test, plus pretty much everything else)
 
 ## TODO
  * Automatic re-connection when connection lost

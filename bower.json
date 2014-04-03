@@ -6,7 +6,7 @@
     "Jeff Cross <middlefloor@gmail.com>"
   ],
   "description": "An AngularJS service for interacting with WebSockets.",
-  "main": "dist/ngSock.js",
+  "main": "dist/ngSocket.js",
   "keywords": [
     "angular",
     "javascript",
@@ -20,9 +20,10 @@
     "node_modules/",
     "package.json",
     "test",
-    "dist.js",
     "karma.conf.js",
-    "README.md"
+    "README.md",
+    "test-*",
+    "dist.sh"
   ],
   "devDependencies": {
     "angular-mocks": "~1.2.10"
