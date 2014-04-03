@@ -21,7 +21,9 @@
     "package.json",
     "test",
     "karma.conf.js",
-    "README.md"
+    "README.md",
+    "test-*",
+    "dist.sh"
   ],
   "devDependencies": {
     "angular-mocks": "~1.2.10"
