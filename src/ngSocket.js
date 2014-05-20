@@ -76,7 +76,7 @@ angular.module('ngSocket', []).
       return new $window.WebSocket(url);
     };
   }]).
-  factory('ngWebSocket', [function () {
+  factory('ngWebSocket', ['ngWebSocketBackend', function (ngWebSocketBackend) {
       var NGWebSocket = function (url) {
         this.url = url;
         this.sendQueue = [];
