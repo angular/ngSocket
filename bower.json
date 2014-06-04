@@ -1,7 +1,7 @@
 {
   "name": "ngSocket",
-  "version": "0.0.2",
-  "homepage": "https://github.com/jeffbcross/ngSock",
+  "version": "0.1.1",
+  "homepage": "https://github.com/jeffbcross/ngSocket",
   "authors": [
     "Jeff Cross <middlefloor@gmail.com>"
   ],
