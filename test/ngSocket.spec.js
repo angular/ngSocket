@@ -1,6 +1,6 @@
 describe('ngSocket', function () {
   describe('ngWebSocketBackend', function () {
-    var $window, ngSocket, WSMock, localMocks = {};
+    var $window, ngSocket, WSMock, localMocks = {}, ngWebSocketBackend;
 
     beforeEach(module('ngSocket'));
 
@@ -27,7 +27,7 @@ describe('ngSocket', function () {
 
 
   describe('ngWebSocket', function () {
-    var $window, ngSocket, WSMock, localMocks = {};
+    var $window, ngSocket, WSMock, localMocks = {}, ngWebSocketBackend;
 
     beforeEach(module('ngSocket', 'ngSocketMock'));
 
@@ -84,7 +84,6 @@ describe('ngSocket', function () {
 
       it('should attempt connecting to a socket if provided a valid URL', function () {
         ws.socket = null;
-        ngWebSocketBackend.expectConnect(url);
         ws._connect();
         ngWebSocketBackend.flush();
       });
