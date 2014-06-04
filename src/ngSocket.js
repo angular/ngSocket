@@ -32,7 +32,12 @@ angular.module('ngSocketMock', []).
       }
 
       while (msg = pendingSends.shift()) {
-        var j = sendQueue.indexOf(msg);
+        sendQueue.forEach(function(pending, i) {
+          if (pending.message === msg.message) {
+            j = i;
+          }
+        });
+
         if (j > -1) {
           sendQueue.splice(j, 1);
         }
@@ -76,7 +81,7 @@ angular.module('ngSocket', []).
       return new $window.WebSocket(url);
     };
   }]).
-  factory('ngWebSocket', [function () {
+  factory('ngWebSocket', ['$q', function ($q) {
       var NGWebSocket = function (url) {
         this.url = url;
         this.sendQueue = [];
@@ -123,6 +128,7 @@ angular.module('ngSocket', []).
           this.socket.send(typeof data === 'string'?
             data :
             JSON.stringify(data));
+          data.deferred.resolve();
         }
       };
 
@@ -181,12 +187,55 @@ angular.module('ngSocket', []).
       };
 
       NGWebSocket.prototype.send = function (data) {
-        this.sendQueue.push(data);
-        this.fireQueue();
+        var deferred = $q.defer(),
+            socket = this,
+            promise = cancelableify(deferred.promise);
+
+        if (socket.readyState === socket._readyStateConstants.RECONNECT_ABORTED) {
+          deferred.reject('Socket connection has been closed');
+        }
+        else {
+          this.sendQueue.push({
+            message: data,
+            deferred: deferred
+          });
+          this.fireQueue();
+        }
+
+        //Credit goes to @btford
+        function cancelableify(promise) {
+          promise.cancel = cancel;
+          var then = promise.then;
+          promise.then = function() {
+            var newPromise = then.apply(this, arguments);
+            return cancelableify(newPromise);
+          };
+          return promise;
+        }
+
+        function cancel(reason) {
+          socket.sendQueue.splice(socket.sendQueue.indexOf(data), 1);
+          deferred.reject(reason);
+          return this;
+        }
+
+        return promise;
       };
 
       NGWebSocket.prototype.reconnect = function () {
 
+      };
+
+      NGWebSocket.prototype._setInternalState = function(state) {
+        if (Math.floor(state) !== state || state < 0 || state > 4) {
+          throw new Error('state must be an integer between 0 and 4, got: ' + state);
+        }
+
+        this._internalConnectionState = state;
+
+        angular.forEach(this.sendQueue, function(pending) {
+          pending.deferred.reject('Message cancelled due to closed socket connection');
+        });
       };
 
       NGWebSocket.prototype.__defineGetter__('readyState', function () {

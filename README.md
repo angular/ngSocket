@@ -2,7 +2,7 @@
 
 ## Status: In-Development
 
-An AngularJS 1.2 service for connecting applications to servers with WebSocket support.
+An AngularJS 1.x service for connecting applications to servers with WebSocket support.
 
 ## Usage
 
@@ -29,7 +29,7 @@ returns instance of NGWebSocket
 name        | arguments                                              | description
 ------------|--------------------------------------------------------|------------
 ngWebSocket <br>_constructor_ | url:String                           | Creates and opens a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance. `var ws = ngWebSocket('ws://foo');`
-send        | data:String,Object                                     | Adds data to a queue, and attempts to send if socket is ready. Accepts string or object, and will stringify objects before sending to socket.
+send        | data:String,Object returns                                     | Adds data to a queue, and attempts to send if socket is ready. Accepts string or object, and will stringify objects before sending to socket.
 onMessage   | callback:Function <br>pattern:String,RegExp:_optional_ | Register a callback to be fired on every message received from the websocket, or optionally just when the message's `data` property matches the string or pattern provided. Callback gets called with a [MessageEvent](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent?redirectlocale=en-US&redirectslug=WebSockets%2FWebSockets_reference%2FMessageEvent) object.
 onOpen      | callback:Function                                      | Function to be executed each time a socket connection is opened for this instance.
 close       | force:Boolean:_optional_                               | Close the underlying socket, as long as no data is still being sent from the client. Optionally force close, even if data is still being sent, by passing `true` as the `force` parameter. To check if data is being sent, read the value of `socket.bufferedAmount`.
@@ -42,6 +42,18 @@ sendQueue          | Array<function>  | Queue of `send` calls to be made on sock
 onOpenCallbacks    | Array<function>  | List of callbacks to be executed when the socket is opened, initially or on re-connection after broken connection. Callbacks should be added to this list through the `onOpen` method.
 onMessageCallbacks | Array<function>  | List of callbacks to be executed when a message is received from the socket. Callbacks should be added via the `onMessage` method.
 readyState         | Number:readonly  | Returns either the readyState value from the underlying WebSocket instance, or a proprietary value representing the internal state of the lib, e.g. if the lib is in a state of re-connecting.
+
+### CancelablePromise
+
+This type is returned from the `send()` instance method of ngWebSocket, inherits from [$q.defer().promise](https://docs.angularjs.org/api/ng/service/$q).
+
+### Methods
+
+name        | arguments                                              | description
+------------|--------------------------------------------------------|------------
+cancel      | | Alias to `deferred.reject()`, allows preventing an unsent message from being sent to socket for any arbitrary reason.
+then        | resolve:Function, reject:Function | Resolves when message has been passed to socket, presuming the socket has a `readyState` of 1. Rejects if the socket is hopelessly disconnected now or in the future (i.e. the library is no longer attempting to reconnect). All messages are immediately rejected when the library has determined that re-establishing a connection is unlikely.
+
 
 ### Service: `ngWebSocketBackend` (in module `ngSocketMock`)
 
@@ -65,8 +77,10 @@ verifyNoOutstandingRequest     |            | Makes sure no requests are pending
 
 ## Development
 
-`$ npm install .`
-`$ bower install`
+```shell
+$ npm install
+$ bower install
+```
 
 ### Unit Tests
 `$ npm test` Starts karma and watches files for changes
@@ -84,8 +98,6 @@ Open localhost:8081/test-app.html and watch browser console and node console to 
 
 ## TODO
  * Automatic re-connection when connection lost
- * Return a promise when calling `send()`
- * Be able to cancel a send without looking it up in an array.
  * Add `onerror` to allow applications to respond to socket errors in their own ways
  * Consider support for ArrayBuffer and Blob datatypes
  * Add `protocols` parameter to constructor

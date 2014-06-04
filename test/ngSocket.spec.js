@@ -180,6 +180,9 @@ describe('ngSocket', function () {
         url = 'ws://foo/bar';
         ngWebSocketBackend.expectConnect(url);
         ws = ngWebSocket(url);
+      });
+
+      afterEach(function() {
         ngWebSocketBackend.flush();
       });
 
@@ -188,14 +191,14 @@ describe('ngSocket', function () {
         var data = {message: 'Send me'};
         ws.send(data);
         expect(ws.sendQueue.length).toBe(1);
-        expect(ws.sendQueue[0]).toBe(data);
+        expect(ws.sendQueue[0].message).toBe(data);
       });
 
 
       it('should accept a string as data', function () {
         var data = 'I am a string';
         ws.send(data);
-        expect(ws.sendQueue[0]).toBe(data);
+        expect(ws.sendQueue[0].message).toBe(data);
       });
 
 
@@ -204,6 +207,79 @@ describe('ngSocket', function () {
         ws.send('send me');
         expect(spy).toHaveBeenCalled();
       });
+
+
+      it('should return a promise', function() {
+        expect(typeof ws.send('promise?').then).toBe('function');
+      });
+
+
+      it('should return a cancelable promise', function() {
+        expect(typeof ws.send('promise?').cancel).toBe('function');
+      });
+
+
+      it('should return reject a cancelled send with reason if provided', inject(function($rootScope) {
+        var reason = 'bad data';
+        var spy = jasmine.createSpy('reject');
+        ws.send('foo').then(null, spy).cancel(reason);
+        $rootScope.$digest();
+        expect(spy).toHaveBeenCalledWith('bad data');
+      }));
+
+
+      it('should remove the request from the queue when calling cancel', function() {
+        ws.sendQueue = ['bar','baz'];
+        var sent = ws.send('foo');
+        expect(ws.sendQueue[2].message).toBe('foo');
+        sent.cancel();
+        expect(ws.sendQueue.length).toBe(2);
+        expect(ws.sendQueue.indexOf('foo')).toBe(-1);
+      });
+
+
+      it('should reject the promise when readyState is 4', inject(function($rootScope) {
+        var spy = jasmine.createSpy('reject');
+        ws._internalConnectionState = 4;
+        ws.send('hello').then(null, spy);
+        expect(ws.sendQueue.length).toBe(0);
+        $rootScope.$digest();
+        expect(spy).toHaveBeenCalledWith('Socket connection has been closed');
+      }));
+    });
+
+
+    describe('._setInternalState()', function() {
+      it('should change the private _internalConnectionState property', function() {
+        var ws = ngWebSocket('ws://foo');
+        ngWebSocketBackend.flush();
+        ws._setInternalState(4);
+        expect(ws._internalConnectionState).toBe(4);
+      });
+
+
+      it('should only allow integer values from 0-4', function() {
+        var ws = ngWebSocket('ws://foo');
+        ngWebSocketBackend.flush();
+        ws._internalConnectionState = 4;
+        expect(function() {
+          ws._setInternalState(5);
+        }).toThrow('state must be an integer between 0 and 4, got: 5');
+        expect(ws._internalConnectionState).toBe(4);
+      });
+
+
+      it('should cancel everything inside the sendQueue if the state is 4', inject(function($q) {
+        var ws = ngWebSocket('ws://foo');
+        var deferred = $q.defer();
+        var spy = spyOn(deferred, 'reject');
+        ngWebSocketBackend.flush();
+        ws.sendQueue.push({
+          deferred: deferred,
+        });
+        ws._setInternalState(4);
+        expect(spy).toHaveBeenCalled();
+      }));
     });
 
 
@@ -236,7 +312,7 @@ describe('ngSocket', function () {
 
 
       it('should only call callback if message matches string exactly', function () {
-        var spy = jasmine.createSpy();
+        var spy = jasmine.createSpy('onResolve');
         ws.onMessage(spy, 'foo');
         ws._onMessageHandler({data: 'bar'});
         expect(spy).not.toHaveBeenCalled();
@@ -252,7 +328,7 @@ describe('ngSocket', function () {
 
       it('should only call callback if message matches pattern', function () {
 
-        var spy = jasmine.createSpy();
+        var spy = jasmine.createSpy('onResolve');
         ws.onMessage(spy, /baz[0-9]{2}/);
         ws._onMessageHandler({data: 'bar'});
         expect(spy).not.toHaveBeenCalled();
@@ -285,7 +361,7 @@ describe('ngSocket', function () {
 
 
       it('should call the passed-in function when a socket first connects', function () {
-        var spy = jasmine.createSpy();
+        var spy = jasmine.createSpy('callback');
         ws.onOpenCallbacks.push(spy);
         ws._onOpenHandler.call(ws);
         expect(spy).toHaveBeenCalled();
@@ -293,7 +369,7 @@ describe('ngSocket', function () {
 
 
       it('should call the passed-in function when a socket re-connects', function () {
-        var spy = jasmine.createSpy();
+        var spy = jasmine.createSpy('callback');
         ws.onOpenCallbacks.push(spy);
         ws._onOpenHandler.call(ws);
         ws._onOpenHandler.call(ws);
@@ -302,8 +378,8 @@ describe('ngSocket', function () {
 
 
       it('should call multiple callbacks when connecting', function () {
-        var spy1 = jasmine.createSpy();
-        var spy2 = jasmine.createSpy();
+        var spy1 = jasmine.createSpy('callback1');
+        var spy2 = jasmine.createSpy('callback2');
         ws.onOpenCallbacks.push(spy1);
         ws.onOpenCallbacks.push(spy2);
         ws._onOpenHandler.call(ws);
@@ -325,7 +401,7 @@ describe('ngSocket', function () {
 
 
       it('should not affect the queue if the readyState is not 1', function () {
-        var data = {message: 'Hello'};
+        var data = {message: 'Hello', deferred: {resolve: angular.noop}};
         ws.socket.readyState = 0;
         ws.send(data);
         expect(ws.sendQueue.length).toBe(1);
@@ -335,7 +411,7 @@ describe('ngSocket', function () {
 
 
       it('should call send for every item in the queue if readyState is 1', function () {
-        var data = {message: 'Hello'};
+        var data = {message: 'Hello', deferred: {resolve: angular.noop}};
         var stringified = JSON.stringify(data);
         ngWebSocketBackend.expectSend(stringified);
         ws.sendQueue.unshift(data);
@@ -353,7 +429,7 @@ describe('ngSocket', function () {
 
 
       it('should stringify an object when sending to socket', function () {
-        var data = {message: 'Send me'};
+        var data = {message: 'Send me', deferred: {resolve: angular.noop}};
         var stringified = JSON.stringify(data);
         ws.socket.readyState = 1;
         ngWebSocketBackend.expectSend(stringified);
@@ -361,6 +437,22 @@ describe('ngSocket', function () {
         ws.fireQueue();
         ngWebSocketBackend.flush();
       });
+
+
+      it('should resolve the deferred when it has been sent to the underlying socket', inject(function($q, $rootScope) {
+        var message = 'Send me';
+        var deferred = $q.defer();
+        var spy = jasmine.createSpy('resolve');
+        deferred.promise.then(spy);
+        var data = {deferred: deferred, message: message};
+        ws.socket.readyState = 1;
+        ngWebSocketBackend.expectSend(message);
+        ws.sendQueue.unshift(data);
+        ws.fireQueue();
+        $rootScope.$digest();
+        ngWebSocketBackend.flush();
+        expect(spy).toHaveBeenCalled();
+      }));
     });
 
 
