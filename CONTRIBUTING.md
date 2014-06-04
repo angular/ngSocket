@@ -1,0 +1,1 @@
+See [AngularJS Contributing Guidelines](https://github.com/angular/angular.js/blob/master/CONTRIBUTING.md)
