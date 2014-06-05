@@ -4,8 +4,8 @@
     <script src="src/ngSocket.js"></script>
     <script>
       var app = angular.module('testApp', ['ngSocket']).
-      controller('TestCtrl', function (ngWebSocket) {
-        var ws = ngWebSocket('ws://localhost:8080');
+      controller('TestCtrl', function (ngSocket) {
+        var ws = ngSocket('ws://localhost:8080');
 
         ws.onMessage(function (msg) {
           console.log('message received', msg);

@@ -9,9 +9,9 @@ An AngularJS 1.x service for connecting applications to servers with WebSocket s
 bower install ngSocket
 
 ```javascript
-.controller('SomeController', function (ngWebSocket) {
+.controller('SomeController', function (ngSocket) {
   //Open a WebSocket connection
-  var ws = ngWebSocket('ws://foo/bar');
+  var ws = ngSocket('ws://foo/bar');
 
   //Can call before socket has opened
   ws.send({foo: 'bar'});
@@ -20,7 +20,7 @@ bower install ngSocket
 
 ## API
 
-### Factory: `ngWebSocket` (in module `ngSocket`)
+### Factory: `ngSocket` (in module `ngSocket`)
 
 returns instance of NGWebSocket
 
@@ -28,8 +28,8 @@ returns instance of NGWebSocket
 
 name        | arguments                                              | description
 ------------|--------------------------------------------------------|------------
-ngWebSocket <br>_constructor_ | url:String                           | Creates and opens a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance. `var ws = ngWebSocket('ws://foo');`
-send        | data:String,Object returns                                     | Adds data to a queue, and attempts to send if socket is ready. Accepts string or object, and will stringify objects before sending to socket.
+ngSocket <br>_constructor_ | url:String                              | Creates and opens a [WebSocket](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket) instance. `var ws = ngSocket('ws://foo');`
+send        | data:String,Object returns                             | Adds data to a queue, and attempts to send if socket is ready. Accepts string or object, and will stringify objects before sending to socket.
 onMessage   | callback:Function <br>pattern:String,RegExp:_optional_ | Register a callback to be fired on every message received from the websocket, or optionally just when the message's `data` property matches the string or pattern provided. Callback gets called with a [MessageEvent](https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent?redirectlocale=en-US&redirectslug=WebSockets%2FWebSockets_reference%2FMessageEvent) object.
 onOpen      | callback:Function                                      | Function to be executed each time a socket connection is opened for this instance.
 close       | force:Boolean:_optional_                               | Close the underlying socket, as long as no data is still being sent from the client. Optionally force close, even if data is still being sent, by passing `true` as the `force` parameter. To check if data is being sent, read the value of `socket.bufferedAmount`.
@@ -45,7 +45,7 @@ readyState         | Number:readonly  | Returns either the readyState value from
 
 ### CancelablePromise
 
-This type is returned from the `send()` instance method of ngWebSocket, inherits from [$q.defer().promise](https://docs.angularjs.org/api/ng/service/$q).
+This type is returned from the `send()` instance method of ngSocket, inherits from [$q.defer().promise](https://docs.angularjs.org/api/ng/service/$q).
 
 ### Methods
 
@@ -55,7 +55,7 @@ cancel      | | Alias to `deferred.reject()`, allows preventing an unsent messag
 then        | resolve:Function, reject:Function | Resolves when message has been passed to socket, presuming the socket has a `readyState` of 1. Rejects if the socket is hopelessly disconnected now or in the future (i.e. the library is no longer attempting to reconnect). All messages are immediately rejected when the library has determined that re-establishing a connection is unlikely.
 
 
-### Service: `ngWebSocketBackend` (in module `ngSocketMock`)
+### Service: `ngSocketBackend` (in module `ngSocketMock`)
 
 Similar to [`httpBackend`](http://docs.angularjs.org/api/ngMock.$httpBackend) mock in AngularJS's `ngMock` module
 

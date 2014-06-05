@@ -1,5 +1,5 @@
 angular.module('ngSocketMock', []).
-  service('ngWebSocketBackend', [function () {
+  service('ngSocketBackend', [function () {
     var connectQueue = [], pendingConnects = [],
         closeQueue = [], pendingCloses = [],
         sendQueue = [], pendingSends = [];
@@ -70,7 +70,7 @@ angular.module('ngSocketMock', []).
   }]);
 
 angular.module('ngSocket', []).
-  service('ngWebSocketBackend', ['$window', function ($window) {
+  service('ngSocketBackend', ['$window', function ($window) {
     this.createWebSocketBackend = function (url) {
       var match = /wss?:\/\//.exec(url);
 
@@ -81,7 +81,13 @@ angular.module('ngSocket', []).
       return new $window.WebSocket(url);
     };
   }]).
-  factory('ngWebSocket', ['$q', 'ngWebSocketBackend', function ($q, ngWebSocketBackend) {
+  factory('ngWebSocketBackend', ['ngSocketBackend', function(ngSocketBackend){
+    return ngSocketBackend;
+  }]).
+  factory('ngWebSocket', ['ngSocket', function(ngSocket){
+    return ngSocket;
+  }]).
+  factory('ngSocket', ['$q', 'ngSocketBackend', function ($q, ngSocketBackend) {
       var NGWebSocket = function (url) {
         this.url = url;
         this.sendQueue = [];
@@ -112,7 +118,7 @@ angular.module('ngSocket', []).
 
       NGWebSocket.prototype._connect = function (force) {
         if (force || !this.socket || this.socket.readyState !== 1) {
-          this.socket = ngWebSocketBackend.createWebSocketBackend(this.url)
+          this.socket = ngSocketBackend.createWebSocketBackend(this.url)
           this.socket.onopen = this._onOpenHandler.bind(this);
           this.socket.onmessage = this._onMessageHandler.bind(this);
           this.socket.onclose = this._onCloseHandler.bind(this);
