@@ -1,4 +1,4 @@
-# ngSocket
+# ngSocket [![Build Status](https://travis-ci.org/angular/ngSocket.png)](https://travis-ci.org/angular/ngSocket)
 
 ## Status: In-Development
 
