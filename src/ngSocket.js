@@ -87,7 +87,7 @@ angular.module('ngSocket', []).
   factory('ngWebSocket', ['ngSocket', function(ngSocket){
     return ngSocket;
   }]).
-  factory('ngSocket', ['$q', 'ngSocketBackend', function ($q, ngSocketBackend) {
+  factory('ngSocket', ['$rootScope', '$q', 'ngSocketBackend', function ($rootScope, $q, ngSocketBackend) {
       var NGWebSocket = function (url) {
         this.url = url;
         this.sendQueue = [];
@@ -144,35 +144,45 @@ angular.module('ngSocket', []).
         }
       };
 
-      /*
-        Public API
-      */
-      NGWebSocket.prototype.onMessage = function (callback, pattern) {
+      NGWebSocket.prototype.onMessage = function (callback, options) {
         if (typeof callback !== 'function') {
           throw new Error('Callback must be a function');
         }
 
-        if (typeof pattern !== 'undefined' && typeof pattern !== 'string' && !(pattern instanceof RegExp)) {
+        if (options && typeof options.filter !== 'undefined' && typeof options.filter !== 'string' && !(options.filter instanceof RegExp)) {
           throw new Error('Pattern must be a string or regular expression');
         }
 
-        this.onMessageCallbacks.push({fn: callback, pattern: pattern});
+        this.onMessageCallbacks.push({
+          fn: callback,
+          pattern: options? options.filter : undefined,
+          autoApply: options? options.autoApply : true
+        });
       };
 
       NGWebSocket.prototype._onMessageHandler = function (message) {
-        var pattern;
-        for (var i = 0; i < this.onMessageCallbacks.length; i++) {
-          pattern = this.onMessageCallbacks[i].pattern;
+        var pattern, socket = this;
+        for (var i = 0; i < socket.onMessageCallbacks.length; i++) {
+          pattern = socket.onMessageCallbacks[i].pattern;
           if (pattern) {
             if (typeof pattern === 'string' && message.data === pattern) {
-              this.onMessageCallbacks[i].fn.call(this, message);
+              socket.onMessageCallbacks[i].fn.call(this, message);
+              safeDigest();
             }
             else if (pattern instanceof RegExp && pattern.exec(message.data)) {
-              this.onMessageCallbacks[i].fn.call(this, message);
+              socket.onMessageCallbacks[i].fn.call(this, message);
+              safeDigest();
             }
           }
           else {
-            this.onMessageCallbacks[i].fn.call(this, message);
+            socket.onMessageCallbacks[i].fn.call(this, message);
+            safeDigest();
+          }
+        }
+
+        function safeDigest() {
+          if (socket.onMessageCallbacks[i].autoApply && !$rootScope.$$phase) {
+            $rootScope.$digest();
           }
         }
       };

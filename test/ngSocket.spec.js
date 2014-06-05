@@ -290,6 +290,10 @@ describe('ngSocket', function () {
         fn = function () {};
         ngSocketBackend.expectConnect(url);
         ws = ngSocket(url);
+      });
+
+
+      afterEach(function() {
         ngSocketBackend.flush();
       });
 
@@ -305,30 +309,53 @@ describe('ngSocket', function () {
       });
 
 
-      it('should accept an optional string as the second argument', function () {
-        ws.onMessage(fn, 'foo');
+      it('should accept an options argument as the second argument', function () {
+        ws.onMessage(fn, {filter: 'foo'});
       });
 
 
-      it('should only call callback if message matches string exactly', function () {
+      it('should accept an optional RegEx pattern as the filter', function () {
+        ws.onMessage(fn, {filter: /baz/});
+      });
+
+
+      it('should complain if the filter option is anything but RegEx or string', function () {
+        expect(function () {ws.onMessage(fn, {filter: 5})}).
+          toThrow(new Error('Pattern must be a string or regular expression'))
+      });
+
+
+      it('should set the autoApply property to true if undefined in options object', function() {
+        ws.onMessage(angular.noop);
+        expect(ws.onMessageCallbacks[0].autoApply).toBe(true);
+      });
+
+
+      it('should set the autoApply property to false if specified in options object', function() {
+        ws.onMessage(angular.noop, {autoApply: false});
+        expect(ws.onMessageCallbacks[0].autoApply).toBe(false);
+      });
+    });
+
+
+    describe('._onMessageHandler()', function() {
+      var fn, url, ws;
+
+      beforeEach(function () {
+        url = 'ws://foo';
+        fn = function () {};
+        ngSocketBackend.expectConnect(url);
+        ws = ngSocket(url);
+      });
+
+      afterEach(function() {
+        ngSocketBackend.flush();
+      });
+
+
+      it('should call callback if message matches filter pattern', function () {
         var spy = jasmine.createSpy('onResolve');
-        ws.onMessage(spy, 'foo');
-        ws._onMessageHandler({data: 'bar'});
-        expect(spy).not.toHaveBeenCalled();
-        ws._onMessageHandler({data: 'foo'});
-        expect(spy).toHaveBeenCalled();
-      });
-
-
-      it('should accept an optional RegEx pattern as the second argument', function () {
-        ws.onMessage(fn, /baz/);
-      });
-
-
-      it('should only call callback if message matches pattern', function () {
-
-        var spy = jasmine.createSpy('onResolve');
-        ws.onMessage(spy, /baz[0-9]{2}/);
+        ws.onMessageCallbacks.push({fn: spy, pattern: /baz[0-9]{2}/});
         ws._onMessageHandler({data: 'bar'});
         expect(spy).not.toHaveBeenCalled();
         ws._onMessageHandler({data: 'baz21'});
@@ -336,9 +363,39 @@ describe('ngSocket', function () {
       });
 
 
-      it('should complain if the second argument is anything but RegEx or string', function () {
-        expect(function () {ws.onMessage(fn, 5)}).toThrow(new Error('Pattern must be a string or regular expression'))
+      it('should only call callback if message matches filter string exactly', function () {
+        var spy = jasmine.createSpy('onResolve');
+        ws.onMessageCallbacks.push({fn: spy, pattern: 'foo'});
+        ws._onMessageHandler({data: 'bar'});
+        expect(spy).not.toHaveBeenCalled();
+        ws._onMessageHandler({data: 'foo'});
+        expect(spy).toHaveBeenCalled();
       });
+
+
+      it('should call $rootScope.$digest() if autoApply is set to true', inject(function($rootScope) {
+        var digest = spyOn($rootScope, '$digest');
+        ws.onMessageCallbacks.push({fn: angular.noop, autoApply: true});
+        ws._onMessageHandler({data: 'Hello'});
+        expect(digest).toHaveBeenCalled();
+      }));
+
+
+      it('should not call $rootScope.$digest() if autoApply is set to false', inject(function($rootScope) {
+        var digest = spyOn($rootScope, '$digest');
+        ws.onMessageCallbacks.push({fn: angular.noop, autoApply: false});
+        ws._onMessageHandler({data: 'Hello'});
+        expect(digest).not.toHaveBeenCalled();
+      }));
+
+
+      it('should not call $rootScope.$digest() if a digest is already in progress', inject(function($rootScope){
+        $rootScope.$$phase = '$digest';
+        var digest = spyOn($rootScope, '$digest');
+        ws.onMessageCallbacks.push({fn: angular.noop, autoApply: true});
+        ws._onMessageHandler({data: 'Hello'});
+        expect(digest).not.toHaveBeenCalled();
+      }));
     });
 
 
