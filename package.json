@@ -1,6 +1,6 @@
 {
   "name": "ngSocket",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "An AngularJS WebSocket library",
   "main": "src/ngSocket.js",
   "directories": {
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/jeffbcross/ngSocket"
+    "url": "git://github.com/angular/ngSocket"
   },
   "author": "jeffbcross (Google)",
   "license": "Apache 2",
   "bugs": {
-    "url": "https://github.com/jeffbcross/ngSocket/issues"
+    "url": "https://github.com/angular/ngSocket/issues"
   },
-  "homepage": "https://github.com/jeffbcross/ngSocket",
+  "homepage": "https://github.com/angular/ngSocket",
   "devDependencies": {
     "karma-script-launcher": "~0.1.0",
     "karma-chrome-launcher": "~0.1.2",
