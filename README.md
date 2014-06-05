@@ -101,3 +101,6 @@ Open localhost:8081/test-app.html and watch browser console and node console to 
  * Add `onerror` to allow applications to respond to socket errors in their own ways
  * Consider support for ArrayBuffer and Blob datatypes
  * Add `protocols` parameter to constructor
+
+## License
+[Apache 2.0](https://github.com/angular/ngSocket/blob/master/LICENSE)
