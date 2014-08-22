@@ -363,6 +363,14 @@ describe('ngSocket', function () {
       });
 
 
+      it('should call callback with json parsed object if specified', function () {
+        var spy = jasmine.createSpy('onResolve');
+        ws.onMessageCallbacks.push({fn: spy, fromJson: true});
+        ws._onMessageHandler({data: '{"foo":"bar"}'});
+        expect(spy).toHaveBeenCalledWith({'foo': 'bar'});
+      });
+
+
       it('should only call callback if message matches filter string exactly', function () {
         var spy = jasmine.createSpy('onResolve');
         ws.onMessageCallbacks.push({fn: spy, pattern: 'foo'});
