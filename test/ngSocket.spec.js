@@ -274,7 +274,7 @@ describe('ngSocket', function () {
         var spy = spyOn(deferred, 'reject');
         ngSocketBackend.flush();
         ws.sendQueue.push({
-          deferred: deferred,
+          deferred: deferred
         });
         ws._setInternalState(4);
         expect(spy).toHaveBeenCalled();
@@ -319,9 +319,14 @@ describe('ngSocket', function () {
       });
 
 
+      it('should accept an optional function as the filter', function () {
+        ws.onMessage(fn, {filter: function (str) {return true;}});
+      });
+
+
       it('should complain if the filter option is anything but RegEx or string', function () {
         expect(function () {ws.onMessage(fn, {filter: 5})}).
-          toThrow(new Error('Pattern must be a string or regular expression'))
+          toThrow(new Error('Pattern must be a string, function or regular expression'))
       });
 
 
@@ -355,7 +360,7 @@ describe('ngSocket', function () {
 
       it('should call callback if message matches filter pattern', function () {
         var spy = jasmine.createSpy('onResolve');
-        ws.onMessageCallbacks.push({fn: spy, pattern: /baz[0-9]{2}/});
+        ws.onMessageCallbacks.push({fn: spy, filter: /baz[0-9]{2}/});
         ws._onMessageHandler({data: 'bar'});
         expect(spy).not.toHaveBeenCalled();
         ws._onMessageHandler({data: 'baz21'});
@@ -365,13 +370,21 @@ describe('ngSocket', function () {
 
       it('should only call callback if message matches filter string exactly', function () {
         var spy = jasmine.createSpy('onResolve');
-        ws.onMessageCallbacks.push({fn: spy, pattern: 'foo'});
+        ws.onMessageCallbacks.push({fn: spy, filter: 'foo'});
         ws._onMessageHandler({data: 'bar'});
         expect(spy).not.toHaveBeenCalled();
         ws._onMessageHandler({data: 'foo'});
         expect(spy).toHaveBeenCalled();
       });
 
+      it('should only call callback if filter function evaluates to true', function () {
+        var spy = jasmine.createSpy('onResolve');
+        ws.onMessageCallbacks.push({fn: spy, filter: function (msg) {return msg === 'foo'}});
+        ws._onMessageHandler({data: 'bar'});
+        expect(spy).not.toHaveBeenCalled();
+        ws._onMessageHandler({data: 'foo'});
+        expect(spy).toHaveBeenCalled();
+      });
 
       it('should call $rootScope.$digest() if autoApply is set to true', inject(function($rootScope) {
         var digest = spyOn($rootScope, '$digest');
@@ -580,7 +593,7 @@ describe('ngSocket', function () {
         ngSocketBackend.expectConnect(url);
         var ws = ngSocket(url);
         expect(ws._reconnectableStatusCodes.length).toBe(1);
-        expect(ws._reconnectableStatusCodes).toEqual([5000])
+        expect(ws._reconnectableStatusCodes).toEqual([5000]);
         ngSocketBackend.flush();
       });
 
