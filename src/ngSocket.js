@@ -4,7 +4,7 @@ angular.module('ngSocketMock', []).
         closeQueue = [], pendingCloses = [],
         sendQueue = [], pendingSends = [];
 
-    function MockWebSocket (url) {};
+    function MockWebSocket (url) {}
     MockWebSocket.prototype.send = function (msg) {
       pendingSends.push(msg);
     };
@@ -93,6 +93,7 @@ angular.module('ngSocket', []).
         this.sendQueue = [];
         this.onOpenCallbacks = [];
         this.onMessageCallbacks = [];
+        this.fromJson = false;
         Object.freeze(this._readyStateConstants);
 
         this._connect();
@@ -118,7 +119,7 @@ angular.module('ngSocket', []).
 
       NGWebSocket.prototype._connect = function (force) {
         if (force || !this.socket || this.socket.readyState !== 1) {
-          this.socket = ngSocketBackend.createWebSocketBackend(this.url)
+          this.socket = ngSocketBackend.createWebSocketBackend(this.url);
           this.socket.onopen = this._onOpenHandler.bind(this);
           this.socket.onmessage = this._onMessageHandler.bind(this);
           this.socket.onclose = this._onCloseHandler.bind(this);
@@ -156,26 +157,34 @@ angular.module('ngSocket', []).
         this.onMessageCallbacks.push({
           fn: callback,
           pattern: options? options.filter : undefined,
-          autoApply: options? options.autoApply : true
+          autoApply: options? options.autoApply : true,
+          fromJson: options? options.fromJson : this.fromJson
         });
       };
 
       NGWebSocket.prototype._onMessageHandler = function (message) {
-        var pattern, socket = this;
+        var pattern, jsonString, socket = this;
+
+        try {
+          jsonString = JSON.parse(message.data)
+        } catch (e) { }
+
         for (var i = 0; i < socket.onMessageCallbacks.length; i++) {
+          var callbackMessage = socket.onMessageCallbacks[i].fromJson && jsonString ? jsonString : message;
+
           pattern = socket.onMessageCallbacks[i].pattern;
           if (pattern) {
             if (typeof pattern === 'string' && message.data === pattern) {
-              socket.onMessageCallbacks[i].fn.call(this, message);
+              socket.onMessageCallbacks[i].fn.call(this, callbackMessage);
               safeDigest();
             }
             else if (pattern instanceof RegExp && pattern.exec(message.data)) {
-              socket.onMessageCallbacks[i].fn.call(this, message);
+              socket.onMessageCallbacks[i].fn.call(this, callbackMessage);
               safeDigest();
             }
           }
           else {
-            socket.onMessageCallbacks[i].fn.call(this, message);
+            socket.onMessageCallbacks[i].fn.call(this, callbackMessage);
             safeDigest();
           }
         }
