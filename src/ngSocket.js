@@ -149,27 +149,39 @@ angular.module('ngSocket', []).
           throw new Error('Callback must be a function');
         }
 
-        if (options && typeof options.filter !== 'undefined' && typeof options.filter !== 'string' && !(options.filter instanceof RegExp)) {
-          throw new Error('Pattern must be a string or regular expression');
+        if (options && typeof options.filter !== 'undefined' && typeof options.filter !== 'string'
+            && !(options.filter instanceof RegExp) && typeof options.filter !== 'function') {
+          throw new Error('Pattern must be a string, function or regular expression');
         }
 
         this.onMessageCallbacks.push({
           fn: callback,
-          pattern: options? options.filter : undefined,
+          filter: options? options.filter : undefined,
           autoApply: options? options.autoApply : true
         });
       };
 
       NGWebSocket.prototype._onMessageHandler = function (message) {
-        var pattern, socket = this;
+        var filter, socket = this;
         for (var i = 0; i < socket.onMessageCallbacks.length; i++) {
-          pattern = socket.onMessageCallbacks[i].pattern;
-          if (pattern) {
-            if (typeof pattern === 'string' && message.data === pattern) {
+          if (socket.onMessageCallbacks[i].pattern) {
+            console.warn('The usage of "pattern" on message callbacks is deprecated, please use "filter"');
+            filter = socket.onMessageCallbacks[i].pattern;
+          }
+          else {
+            filter = socket.onMessageCallbacks[i].filter;
+          }
+
+          if (filter) {
+            if (typeof filter === 'string' && message.data === filter) {
               socket.onMessageCallbacks[i].fn.call(this, message);
               safeDigest();
             }
-            else if (pattern instanceof RegExp && pattern.exec(message.data)) {
+            else if (filter instanceof RegExp && filter.exec(message.data)) {
+              socket.onMessageCallbacks[i].fn.call(this, message);
+              safeDigest();
+            }
+            else if (typeof filter === 'function' && filter(message.data) === true) {
               socket.onMessageCallbacks[i].fn.call(this, message);
               safeDigest();
             }
