@@ -131,9 +131,9 @@ angular.module('ngSocket', []).
             this.socket.readyState === 1) {
           var data = this.sendQueue.shift();
 
-          this.socket.send(typeof data === 'string'?
-            data :
-            JSON.stringify(data));
+          this.socket.send(typeof data.message === 'string'?
+            data.message :
+            JSON.stringify(data.message));
           data.deferred.resolve();
         }
       };
