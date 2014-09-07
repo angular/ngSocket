@@ -529,11 +529,6 @@ describe('ngSocket', function () {
       });
 
 
-      it('should complain if I try to set the readyState', function () {
-        expect(function () {ws.readyState = 5}).toThrow(new Error('The readyState property is read-only'));
-      });
-
-
       it('should return a proprietary readyState if lib is in a special state', function () {
         ws.socket.readyState = 1;
         ws._internalConnectionState = 5;
