@@ -93,6 +93,7 @@ angular.module('ngSocket', []).
         this.sendQueue = [];
         this.onOpenCallbacks = [];
         this.onMessageCallbacks = [];
+        this.onErrorCallbacks = [];
         Object.freeze(this._readyStateConstants);
 
         this._connect();
@@ -121,6 +122,7 @@ angular.module('ngSocket', []).
           this.socket = ngSocketBackend.createWebSocketBackend(this.url)
           this.socket.onopen = this._onOpenHandler.bind(this);
           this.socket.onmessage = this._onMessageHandler.bind(this);
+          this.socket.onerror = this._onErrorHandler.bind(this);
           this.socket.onclose = this._onCloseHandler.bind(this);
         }
       };
@@ -141,6 +143,12 @@ angular.module('ngSocket', []).
       NGWebSocket.prototype.notifyOpenCallbacks = function () {
         for (var i = 0; i < this.onOpenCallbacks.length; i++) {
           this.onOpenCallbacks[i].call(this);
+        }
+      };
+
+      NGWebSocket.prototype.notifyErrorCallbacks = function (event) {
+        for (var i = 0; i < this.onErrorCallbacks.length; i++) {
+          this.onErrorCallbacks[i].call(this, event);
         }
       };
 
@@ -194,6 +202,14 @@ angular.module('ngSocket', []).
       NGWebSocket.prototype._onOpenHandler = function () {
         this.notifyOpenCallbacks();
         this.fireQueue();
+      };
+
+      NGWebSocket.prototype.onError = function (cb) {
+        this.onErrorCallbacks.push(cb);
+      };
+
+      NGWebSocket.prototype._onErrorHandler = function (event) {
+        this.notifyErrorCallbacks(event);
       };
 
       NGWebSocket.prototype._onCloseHandler = function (event) {
