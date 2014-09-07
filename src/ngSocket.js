@@ -107,7 +107,7 @@ angular.module('ngSocket', []).
       };
 
       NGWebSocket.prototype._reconnectableStatusCodes = [
-        5000
+        4000
       ];
 
       NGWebSocket.prototype.close = function (force) {
@@ -197,7 +197,7 @@ angular.module('ngSocket', []).
       };
 
       NGWebSocket.prototype._onCloseHandler = function (event) {
-        if (this._reconnectableStatusCodes.indexOf(event.statusCode) > -1) {
+        if (this._reconnectableStatusCodes.indexOf(event.code) > -1) {
           this.reconnect();
         }
       };
