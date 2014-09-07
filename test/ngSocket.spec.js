@@ -107,6 +107,7 @@ describe('ngSocket', function () {
       it('should attach handlers to socket event attributes', function () {
         expect(typeof ws.socket.onopen).toBe('function');
         expect(typeof ws.socket.onmessage).toBe('function');
+        expect(typeof ws.socket.onerror).toBe('function');
         expect(typeof ws.socket.onclose).toBe('function');
         ngSocketBackend.flush();
       });
@@ -599,6 +600,49 @@ describe('ngSocket', function () {
       it('should alias ngSocketBackend', inject(function(ngWebSocketBackend) {
         expect(ngWebSocketBackend).toBe(ngSocketBackend);
       }));
+    });
+
+
+    describe('.onError()', function () {
+      it('should add the passed in function to the onErrorCallbacks array', function () {
+        var cb = function () {};
+        var url = 'ws://foo';
+        ngSocketBackend.expectConnect(url);
+        var ws = ngSocket(url);
+        ws.onError(cb);
+        expect(ws.onErrorCallbacks[0]).toBe(cb);
+        ngSocketBackend.flush();
+      });
+    });
+
+
+    describe('._onErrorHandler()', function () {
+      var url, ws;
+
+      beforeEach(function () {
+        url = 'ws://foo';
+        ngSocketBackend.expectConnect(url);
+        ws = ngSocket(url);
+        ngSocketBackend.flush();
+      });
+
+      it('should call the passed-in function when an error occurs', function () {
+        var spy = jasmine.createSpy('callback');
+        ws.onErrorCallbacks.push(spy);
+        ws._onErrorHandler.call(ws, new Error());
+        expect(spy).toHaveBeenCalled();
+      });
+
+
+      it('should call multiple callbacks when connecting', function () {
+        var spy1 = jasmine.createSpy('callback1');
+        var spy2 = jasmine.createSpy('callback2');
+        ws.onErrorCallbacks.push(spy1);
+        ws.onErrorCallbacks.push(spy2);
+        ws._onErrorHandler.call(ws);
+        expect(spy1).toHaveBeenCalled();
+        expect(spy2).toHaveBeenCalled();
+      });
     });
   });
 });
