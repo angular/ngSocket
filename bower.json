@@ -12,7 +12,7 @@
     "javascript",
     "websockets"
   ],
-  "license": "MIT",
+  "license": "Apache 2",
   "ignore": [
     "src/",
     "**/.*",
