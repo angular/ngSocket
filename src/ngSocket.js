@@ -93,6 +93,7 @@ angular.module('ngSocket', []).
         this.sendQueue = [];
         this.onOpenCallbacks = [];
         this.onMessageCallbacks = [];
+        this.onCloseCallbacks = [];
         Object.freeze(this._readyStateConstants);
 
         this._connect();
@@ -141,6 +142,12 @@ angular.module('ngSocket', []).
       NGWebSocket.prototype.notifyOpenCallbacks = function () {
         for (var i = 0; i < this.onOpenCallbacks.length; i++) {
           this.onOpenCallbacks[i].call(this);
+        }
+      };
+
+      NGWebSocket.prototype.notifyCloseCallbacks = function () {
+        for (var i = 0; i < this.onCloseCallbacks.length; i++) {
+          this.onCloseCallbacks[i].call(this);
         }
       };
 
@@ -196,9 +203,15 @@ angular.module('ngSocket', []).
         this.fireQueue();
       };
 
+      NGWebSocket.prototype.onClose = function (cb) {
+        this.onCloseCallbacks.push(cb);
+      };
+
       NGWebSocket.prototype._onCloseHandler = function (event) {
         if (this._reconnectableStatusCodes.indexOf(event.statusCode) > -1) {
           this.reconnect();
+        } else {
+          this.notifyCloseCallbacks();
         }
       };
 
@@ -239,7 +252,7 @@ angular.module('ngSocket', []).
       };
 
       NGWebSocket.prototype.reconnect = function () {
-
+        this._connect();
       };
 
       NGWebSocket.prototype._setInternalState = function(state) {

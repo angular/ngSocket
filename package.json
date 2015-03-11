@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/angular/ngSocket"
+    "url": "git://github.com/hackerfleet/ngSocket"
   },
   "author": "jeffbcross (Google)",
   "license": "Apache 2",
   "bugs": {
-    "url": "https://github.com/angular/ngSocket/issues"
+    "url": "https://github.com/hackerfleet/ngSocket/issues"
   },
-  "homepage": "https://github.com/angular/ngSocket",
+  "homepage": "https://github.com/hackerfleet/ngSocket",
   "devDependencies": {
     "karma-script-launcher": "~0.1.0",
     "karma-chrome-launcher": "~0.1.2",
