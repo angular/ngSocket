@@ -131,7 +131,7 @@ angular.module('ngSocket', []).
             this.socket.readyState === 1) {
           var data = this.sendQueue.shift();
 
-          this.socket.send(typeof data === 'string'?
+          this.socket.send(typeof data === 'string' || data instanceof ArrayBuffer || data instanceof Blob ?
             data :
             JSON.stringify(data));
           data.deferred.resolve();
